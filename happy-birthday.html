@@ -242,7 +242,7 @@
       const diff = endY - startY;
       // 手指向下滑动，终点Y > 起点Y，差值大于60px触发
       if (diff > 60) {
-        window.location.href = "./memory-journey-1.html";
+        window.location.href = "./memory-journey-index.html";
       }
     });
 
@@ -250,7 +250,7 @@
     document.addEventListener('wheel', (e) => {
       if(!lockMask.classList.contains('unlock')) return;
       if (e.deltaY > 30) {
-        window.location.href = "./memory-journey.html";
+        window.location.href = "./memory-journey-index.html";
       }
     });
   </script>
