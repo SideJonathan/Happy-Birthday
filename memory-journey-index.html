@@ -9,7 +9,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap');
-
     * {
       font-family: 'Noto Serif SC', serif;
       margin: 0;
@@ -17,18 +16,15 @@
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
-
     html, body {
       width: 100%;
       height: 100%;
       overflow: hidden;
       background: #fce4ec;
     }
-
     body {
       position: relative;
     }
-
     .stage {
       position: fixed;
       inset: 0;
@@ -39,7 +35,6 @@
       /* 上浮入场动画 4.5s */
       animation: floatUp 4.5s ease-out forwards;
     }
-
     @keyframes floatUp {
       from {
         opacity: 0;
@@ -50,7 +45,6 @@
         transform: translateY(0);
       }
     }
-
     .bg-image {
       position: absolute;
       inset: 0;
@@ -58,7 +52,6 @@
       height: 100%;
       background: url('./background3.png') no-repeat center / cover;
     }
-
     /* ========== 光影流转层 ========== */
     .light-flow {
       position: fixed;
@@ -73,7 +66,6 @@
       0% { transform: translate(-6%,-4%); }
       100% { transform: translate(6%,4%); }
     }
-
     /* ========== 花瓣容器与花瓣动画 ========== */
     .petal-container {
       position: fixed;
@@ -98,7 +90,6 @@
       0% {transform:translateX(-25px) rotate(0deg);}
       100% {transform:translateX(25px) rotate(25deg);}
     }
-
     .text-wrap {
       position: fixed;
       inset: 0;
@@ -110,7 +101,6 @@
       pointer-events: none;
       gap: 24px;
     }
-
     .main-title {
       font-size: clamp(1.6rem, 6vw, 2.6rem);
       color: #ffffff;
@@ -123,7 +113,6 @@
       text-shadow: 0 1px 8px rgba(120,30,50,0.4);
       opacity:0.9;
     }
-
     /* 锁定遮罩 */
     .lock-mask {
       position: fixed;
@@ -139,26 +128,22 @@
 </head>
 <body>
   <div id="lockMask" class="lock-mask"></div>
-
   <div class="stage">
     <div class="bg-image"></div>
   </div>
-
   <!-- 光影流转 -->
   <div class="light-flow"></div>
   <!-- 花瓣容器 -->
   <div class="petal-container" id="petalBox"></div>
-
   <!-- 文字区域 -->
   <div class="text-wrap">
     <div class="main-title">欢迎来到回忆长廊</div>
-    <div class="sub-tip">右滑指向未来，左滑指向过往</div>
+    <!-- 修改提示文字 -->
+    <div class="sub-tip">轻触页面上部1/3，指向往昔；轻触页面下部1/3，指向未来</div>
   </div>
-
   <script>
     const lockMask = document.getElementById('lockMask');
     const petalBox = document.getElementById('petalBox');
-
     // 生成花瓣
     function createPetal(){
       const petal = document.createElement('div');
@@ -175,59 +160,34 @@
       setTimeout(()=>petal.remove(), fallTime*1000);
     }
     setInterval(createPetal,350);
-
     // 4.5s解锁手势
     setTimeout(() => {
       lockMask.classList.add('unlock');
     }, 4500);
 
-    // 滑动手势检测
-    let touchStartX = 0;
-    let touchEndX = 0;
-    const minSwipeDistance = 60;
-
-    document.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, { passive:true });
-
-    document.addEventListener('touchend', (e) => {
-      if(!lockMask.classList.contains('unlock')) return;
-      touchEndX = e.changedTouches[0].screenX;
-      const deltaX = touchEndX - touchStartX;
-
-    // 滑动手势检测
-    let touchStartX = 0;
-    let touchEndX = 0;
-    const minSwipeDistance = 60;
-
-    document.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, { passive:true });
-
-    document.addEventListener('touchend', (e) => {
-      if(!lockMask.classList.contains('unlock')) return;
-      touchEndX = e.changedTouches[0].screenX;
-      const deltaX = touchEndX - touchStartX;
-
-      // 【修改】左滑：手指从右向左滑动，deltaX 小于负阈值
-      if(deltaX < -minSwipeDistance){
-        window.location.href = "./memory-journey.html";
+    // =========【替换：区域点击跳转，删除旧左右滑动】=========
+    function handleTap(yPos){
+      const h = window.innerHeight;
+      if(yPos < h * 0.33){
+        // 上部1/3 指向往昔：跳回happy‑birthday.html
+        window.location.href="./happy-birthday.html";
+      }else if(yPos > h * 0.67){
+        // 下部1/3 指向未来：进入memory‑journey.html
+        window.location.href="./memory-journey.html";
       }
-    }, { passive:true });
+    }
 
-    // 电脑端鼠标模拟：水平拖拽向左移动跳转
-    let mouseDownX = null;
-    document.addEventListener('mousedown',e=>{
-      mouseDownX = e.clientX;
-    });
-    document.addEventListener('mouseup',e=>{
-      if(!lockMask.classList.contains('unlock') || mouseDownX === null) return;
-      const dx = e.clientX - mouseDownX;
-      // 鼠标向左拖拽 dx 为负数
-      if(dx < -minSwipeDistance){
-        window.location.href = "./memory-journey.html";
-      }
-      mouseDownX = null;
+    // 移动端触摸
+    document.addEventListener('touchend', (e)=>{
+      if(!lockMask.classList.contains('unlock')) return;
+      const y = e.changedTouches[0].clientY;
+      handleTap(y);
+    },{passive:true});
+
+    // 电脑端鼠标点击
+    document.addEventListener('mouseup', (e)=>{
+      if(!lockMask.classList.contains('unlock')) return;
+      handleTap(e.clientY);
     });
   </script>
 </body>

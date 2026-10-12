@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>妈妈，生日快乐</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>生日快乐</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap');
-
     * {
       font-family: 'Noto Serif SC', serif;
       margin: 0;
@@ -17,18 +15,15 @@
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
-
     html, body {
       width: 100%;
       height: 100%;
       overflow: hidden;
       background: #fce4ec;
     }
-
     body {
       position: relative;
     }
-
     .stage {
       position: fixed;
       inset: 0;
@@ -39,7 +34,6 @@
       /* hp页面：纯淡入入场，4.5s */
       animation: fadeIn 4.5s ease-out forwards;
     }
-
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -48,7 +42,6 @@
         opacity: 1;
       }
     }
-
     .bg-image {
       position: absolute;
       inset: 0;
@@ -56,7 +49,6 @@
       height: 100%;
       background: url('./background2.png') no-repeat center / cover;
     }
-
     /* ========== 光影流转层 ========== */
     .light-flow {
       position: fixed;
@@ -71,7 +63,6 @@
       0% { transform: translate(-6%,-4%); }
       100% { transform: translate(6%,4%); }
     }
-
     /* ========== 花瓣容器与花瓣动画 ========== */
     .petal-container {
       position: fixed;
@@ -96,7 +87,6 @@
       0% {transform:translateX(-25px) rotate(0deg);}
       100% {transform:translateX(25px) rotate(25deg);}
     }
-
     .blur-layer {
       position: fixed;
       inset: 0;
@@ -111,13 +101,11 @@
                   background 0.8s ease;
       pointer-events: none;
     }
-
     .blur-layer.active {
       backdrop-filter: blur(7px);
       -webkit-backdrop-filter: blur(7px);
       background: rgba(255, 255, 255, 0.12);
     }
-
     .tip-layer {
       position: fixed;
       inset: 0;
@@ -129,11 +117,9 @@
       opacity: 0;
       transition: opacity 0.7s ease;
     }
-
     .tip-layer.show {
       opacity: 1;
     }
-
     .tip-text {
       color: #ffffff;
       text-shadow: 0 2px 10px rgba(120, 30, 60, 0.55);
@@ -142,21 +128,18 @@
       padding: 0 1.2rem;
       letter-spacing: 0.05em;
     }
-
     .char {
       opacity: 0;
       transform: translateY(14px);
       display: inline-block;
       animation: charShow 0.45s ease forwards;
     }
-
     @keyframes charShow {
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
-
     /* 锁定遮罩 */
     .lock-mask {
       position: fixed;
@@ -172,36 +155,30 @@
 </head>
 <body>
   <div id="lockMask" class="lock-mask"></div>
-
   <div class="stage">
     <div class="bg-image"></div>
   </div>
-
   <!-- 光影流转 -->
   <div class="light-flow"></div>
   <!-- 花瓣容器 -->
   <div class="petal-container" id="petalBox"></div>
-
   <div id="blurLayer" class="blur-layer"></div>
-
   <div id="tipLayer" class="tip-layer">
     <div id="tipText" class="tip-text"></div>
   </div>
-
   <script>
-    const textStr = "向下滑动页面・进入回忆长廊";
+    // =========【修改提示文字】=========
+    const textStr = "轻触页面下部・进入回忆长廊";
     const tipDom = document.getElementById('tipText');
     const tipLayer = document.getElementById('tipLayer');
     const blurLayer = document.getElementById('blurLayer');
     const lockMask = document.getElementById('lockMask');
     const petalBox = document.getElementById('petalBox');
-
     let html = "";
     textStr.split('').forEach((ch, idx) => {
       html += `<span class="char" style="animation-delay:${idx * 0.08}s">${ch}</span>`;
     });
     tipDom.innerHTML = html;
-
     // 生成花瓣
     function createPetal(){
       const petal = document.createElement('div');
@@ -218,42 +195,35 @@
       setTimeout(()=>petal.remove(), fallTime*1000);
     }
     setInterval(createPetal,350);
-
     // 5秒后开启模糊+文字
     setTimeout(() => {
       blurLayer.classList.add('active');
       tipLayer.classList.add('show');
     }, 5000);
-
-    // 4.5s动画结束，解锁滑动交互
+    // 4.5s动画结束，解锁交互
     setTimeout(() => {
       lockMask.classList.add('unlock');
     }, 4500);
 
-    // ========== 下滑触发跳转 ==========
-    let startY = 0;
-    document.addEventListener('touchstart', (e) => {
-      startY = e.touches[0].clientY;
-    }, { passive: true });
-
+    // =========【修改跳转逻辑：不再依靠向下滑动，改为点击/触摸页面下半区域跳转】=========
     document.addEventListener('touchend', (e) => {
       if(!lockMask.classList.contains('unlock')) return;
-      const endY = e.changedTouches[0].clientY;
-      const diff = endY - startY;
-      // 手指向下滑动，终点Y > 起点Y，差值大于60px触发
-      if (diff > 60) {
+      const y = e.changedTouches[0].clientY;
+      const h = window.innerHeight;
+      // 触摸位置 > 屏幕高度2/3：页面下部，跳转回忆长廊
+      if(y > h * 2 / 3){
         window.location.href = "./memory-journey-index.html";
       }
     });
-
-    // 电脑端：鼠标滚轮向下滚动
-    document.addEventListener('wheel', (e) => {
+    // 电脑端鼠标点击下半部分也支持
+    document.addEventListener('mouseup', (e) => {
       if(!lockMask.classList.contains('unlock')) return;
-      if (e.deltaY > 30) {
+      const y = e.clientY;
+      const h = window.innerHeight;
+      if(y > h * 2 / 3){
         window.location.href = "./memory-journey-index.html";
       }
     });
   </script>
 </body>
 </html>
-
